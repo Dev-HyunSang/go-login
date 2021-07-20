@@ -9,6 +9,8 @@ import (
 	"github.com/joho/godotenv"
 )
 
+var DB *sql.DB
+
 func DBConnection() {
 	err := godotenv.Load(".env")
 	if err != nil {
@@ -16,10 +18,15 @@ func DBConnection() {
 	}
 
 	// 환경변수를 이용하여서 DB 접속 정보를 가지고 옴.
-	DB_NAME := os.Getenv("DB_NAME")
+	DB_ACCOUNT := os.Getenv("DB_ACCOUNT")
 	DB_PASSWORD := os.Getenv("DB_PASSWORD")
 	DB_HOST := os.Getenv("DB_HOST")
+	DB_NAME := os.Getenv("DB_NAME")
 
-	conn, err := sql.Open("mysql")
-
+	db, err := sql.Open("mysql", DB_ACCOUNT+":"+DB_PASSWORD+"@tcp("+DB_HOST+")/"+DB_NAME)
+	if err != nil {
+		log.Fatal(err)
+		os.Exit(1)
+	}
+	DB = db
 }
