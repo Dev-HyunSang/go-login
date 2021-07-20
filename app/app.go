@@ -46,6 +46,12 @@ func LoginRenderHandler(w http.ResponseWriter, r *http.Request) {
 	t.Execute(w, nil)
 }
 
+// Only Function and Method "GET"
+func NewMemberHandler(w http.ResponseWriter, r *http.Request) {
+	user := new(User)
+	
+}
+
 func NewHandler() http.Handler {
 	mux := mux.NewRouter()
 	fs := http.FileServer(http.Dir("./public/"))
@@ -54,6 +60,9 @@ func NewHandler() http.Handler {
 	mux.HandleFunc("/", IndexRenderHandler).Methods("GET")
 	mux.HandleFunc("/register", RegisterRenderHandler).Methods("GET")
 	mux.HandleFunc("/login", LoginRenderHandler).Methods("GET")
+
+	// GET
+	mux.HandleFunc("/", NewMemberHandler)
 
 	// POST
 
