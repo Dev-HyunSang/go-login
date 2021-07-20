@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fiber-login/app"
+	"go-login/app"
 	"log"
 	"net/http"
 )
