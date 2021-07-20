@@ -68,6 +68,6 @@ create table Users (
     "last_name": "현상",
     "email": "hyun.sang@parkhyunsang.com",
     "password": "$2a$10$3QRdPhyeA0Dgxm.mhFqEkO/7Ok02WJZMq8NkYNdqPp9Kf2LBrnURC", // Encryption
-    "created_at": "2021-07-20T23:25:11.551493+09:00" //
+    "created_at": "2021-07-20T23:25:11.551493+09:00" // CreateAt | time.Now()
 }
 ```
