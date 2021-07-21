@@ -26,6 +26,12 @@ type User struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
+type LoginUser struct {
+	Email    string    `json:"email"`
+	Password string    `json:"password"`
+	LoginAt  time.Time `json:"login_at"`
+}
+
 var err error
 
 // Only Render Handler and Method "GET"
@@ -104,6 +110,46 @@ func NewMemberHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, string(data))
 }
 
+func LoginMemberHandler(w http.ResponseWriter, r *http.Request) {
+	err := godotenv.Load(".env")
+	if err != nil {
+		log.Fatalf("Error Loading .env file")
+	}
+
+	// 환경변수를 이용하여서 DB 접속 정보를 가지고 옴.
+	DB_ACCOUNT := os.Getenv("DB_ACCOUNT")
+	DB_PASSWORD := os.Getenv("DB_PASSWORD")
+	DB_HOST := os.Getenv("DB_HOST")
+	DB_NAME := os.Getenv("DB_NAME")
+
+	Connection := DB_ACCOUNT + ":" + DB_PASSWORD + "@tcp(" + DB_HOST + ")/" + DB_NAME
+	db, err := sql.Open("mysql", Connection)
+	if err != nil {
+		panic(err)
+	}
+
+	defer db.Close()
+	var (
+		Email    string
+		Password string
+	)
+
+	LoginUser := new(LoginUser)
+	err = json.NewDecoder(r.Body).Decode(&LoginUser)
+	if err != nil {
+		panic(err)
+	}
+
+	err = db.QueryRow("SELECT Email,Password FROM Users").Scan(&Email, &Password)
+	if err != nil {
+		panic(err)
+	}
+
+	LoginUser.Email = Email
+	LoginUser.Password = Password
+	LoginUser.LoginAt = time.Now()
+}
+
 func NewHandler() http.Handler {
 	mux := mux.NewRouter()
 	fs := http.FileServer(http.Dir("./public/"))
@@ -113,10 +159,8 @@ func NewHandler() http.Handler {
 	mux.HandleFunc("/register", RegisterRenderHandler).Methods("GET")
 	mux.HandleFunc("/login", LoginRenderHandler).Methods("GET")
 
-	// GET
-	mux.HandleFunc("/register/new", NewMemberHandler).Methods("GET")
-
-	// POST
+	mux.HandleFunc("/register/new", NewMemberHandler).Methods("POST")
+	mux.HandleFunc("/login", LoginMemberHandler).Methods("POST")
 
 	mux.PathPrefix("/public/").Handler(http.StripPrefix("/public/", fs))
 	return mux
