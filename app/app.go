@@ -27,9 +27,12 @@ type User struct {
 }
 
 type LoginUser struct {
-	Email    string    `json:"email"`
-	Password string    `json:"password"`
-	LoginAt  time.Time `json:"login_at"`
+	ID        uuid.UUID `json:"id"`
+	FirstName string    `json:"first_name"`
+	LastName  string    `json:"last_name"`
+	Email     string    `json:"email"`
+	Password  string    `json:"password"`
+	LoginAt   time.Time `json:"login_at"`
 }
 
 var err error
@@ -129,9 +132,9 @@ func LoginMemberHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	defer db.Close()
+
 	var (
-		Email    string
-		Password string
+		HashPw string
 	)
 
 	LoginUser := new(LoginUser)
@@ -140,14 +143,24 @@ func LoginMemberHandler(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	err = db.QueryRow("SELECT Email,Password FROM Users").Scan(&Email, &Password)
+	_ = db.QueryRow(
+		"SELECT ID, FirstName, LastName, Password"+
+			"FROM go_login"+
+			"WHERE Email=? AND is_enabled=1", LoginUser.Email).Scan(&LoginUser.ID, &LoginUser.FirstName, &LoginUser.LastName, &HashPw)
+
+	LoginUser.LoginAt = time.Now()
+
+	err = bcrypt.CompareHashAndPassword([]byte(HashPw), []byte(LoginUser.Password))
 	if err != nil {
-		panic(err)
+		w.Header().Add("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprint(w, "Login Failure!")
+	} else {
+		w.Header().Add("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprint(w, "Login Successful!")
 	}
 
-	LoginUser.Email = Email
-	LoginUser.Password = Password
-	LoginUser.LoginAt = time.Now()
 }
 
 func NewHandler() http.Handler {
