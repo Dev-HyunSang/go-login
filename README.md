@@ -9,11 +9,17 @@
     - `index.html` 완료 - 2021.07.19
     - `login.html` 완료 - 2021.07.19
     - `register.html` 완료 - 2021.07.19
-- [X] `/register/new`: - 2021.07.19
+- [X] `/register/new` POST: - 2021.07.19
     - [X] MySQL 연결 및 Table 구축
     - [X] `uuid` 패키지를 이용하여 `UUIDv4`로 개인별 ID 부여
     - [X] `bcrypt` 패키지를 이용하여 패스워드 암호화
     - [X] API 요청 및 응답 구성 
+- [ ] `/login` POST: 
+    - [X] MySQL 연결  - 2021.07.22
+    - [ ] 입력된 값과 DB에 저장되어 있는 값과 대조 / MySQL & `bcrypt`
+    - [ ] JMT 구성으로 입력된 값과 DB에 저장되어 있는 값을 대조 후 JMT Token 생성
+    - [ ] API 요청 및 응답 구성
+
 - [ ] Infrastructure
     - [X] Docker 기반의 MySQL 서버 구축 - 2021.07.19
         - [X] Table Users 설계 및 구축
