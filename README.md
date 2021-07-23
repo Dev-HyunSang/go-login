@@ -81,3 +81,12 @@ create table Users (
     "created_at": "2021-07-20T23:25:11.551493+09:00" // CreateAt | time.Now()
 }
 ```
+
+## 오류(고민) 해결기
+### ID?
+![error-01](./images/error-01.png)
+사용자마다 다른 아이디를 생성하여서 고유 식별이 가능하도록 하여야 하는데 어떻게 해야할지 고민하던 중 코딩냄비에 질문을 해 본 결과 UUID를 사용하면 좋다고 해서 사용하게 됨.
+
+### Session vs JWT 
+![error-02](./images/error-02.png)
+로그인 이후 관리를 어떻게 해야하는지 궁금해서 Discrod Gophers에 질문을 해 본 결과 보편적으로 사용하고 있는 방식은 Seesion 방식을 많이 사용하고 있다고 하여서 Seesion을 사용하기로 함.
