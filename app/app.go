@@ -13,10 +13,14 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gofrs/uuid"
 	"github.com/gorilla/mux"
+	"github.com/gorilla/sessions"
 	"github.com/joho/godotenv"
 	"golang.org/x/crypto/bcrypt"
 )
 
+/*Sturct를 두 개로 분할하였습니다. 이유는 로그인과 회원가입시 Struct 더 확실히 구분하기 위함입니다.
+User = NewMemberHandler에서 사용되며 회원가입시 DB로 구조화 시켜서 Insert함.
+LoginUser = LoginMemberHandler에서 사용하고 있으며 로그인시 DB로 SELETC를 하기 위함. */
 type User struct {
 	ID        uuid.UUID `json: "id"`
 	FirstName string    `json:"first_name"`
@@ -35,7 +39,10 @@ type LoginUser struct {
 	LoginAt   time.Time `json:"login_at"`
 }
 
-var err error
+var (
+	err   error
+	store = sessions.NewCookieStore([]byte(os.Getenv("SESSION_KEY")))
+)
 
 // Only Render Handler and Method "GET"
 func IndexRenderHandler(w http.ResponseWriter, r *http.Request) {
@@ -56,6 +63,14 @@ func RegisterRenderHandler(w http.ResponseWriter, r *http.Request) {
 
 func LoginRenderHandler(w http.ResponseWriter, r *http.Request) {
 	t, err := template.ParseFiles("public/login.html")
+	if err != nil {
+		panic(err)
+	}
+	t.Execute(w, nil)
+}
+
+func HomeRenderHandler(w http.ResponseWriter, r *http.Request) {
+	t, err := template.ParseFiles("public/home/index.html")
 	if err != nil {
 		panic(err)
 	}
@@ -152,15 +167,12 @@ func LoginMemberHandler(w http.ResponseWriter, r *http.Request) {
 
 	err = bcrypt.CompareHashAndPassword([]byte(HashPw), []byte(LoginUser.Password))
 	if err != nil {
-		w.Header().Add("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprint(w, "Login Failure!")
+		http.Redirect(w, r, "/login", http.StatusBadRequest)
 	} else {
-		w.Header().Add("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		fmt.Fprint(w, "Login Successful!")
+		session, _ := store.Get(r, "User-Login")
+		session.value
+		http.Redirect(w, r, "/home/index", http.StatusOK)
 	}
-
 }
 
 func NewHandler() http.Handler {
@@ -171,6 +183,7 @@ func NewHandler() http.Handler {
 	mux.HandleFunc("/", IndexRenderHandler).Methods("GET")
 	mux.HandleFunc("/register", RegisterRenderHandler).Methods("GET")
 	mux.HandleFunc("/login", LoginRenderHandler).Methods("GET")
+	mux.HandleFunc("/home/index", HomeRenderHandler).Methods("GET")
 
 	mux.HandleFunc("/register/new", NewMemberHandler).Methods("POST")
 	mux.HandleFunc("/login", LoginMemberHandler).Methods("POST")
