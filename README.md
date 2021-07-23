@@ -26,8 +26,8 @@
     - [ ] Docker 기반의 Golang BackEnd 서버 구축
 
 ### FrontEnd
-- [ ] Register
-    - [ ] `/register/new`: 회원가입 요청하기
+- [X] Register
+    - [X] `/register/new`: 회원가입 요청하기
 - [ ] Login
     - [ ] `/login`: 로그인 요청하기
 
@@ -81,7 +81,7 @@ create table Users (
     "created_at": "2021-07-20T23:25:11.551493+09:00" // CreateAt | time.Now()
 }
 ```
-
+![FrontEnd Register](./images/Register.mp4)
 ## 오류(고민) 해결기
 ### ID?
 ![error-01](./images/error-01.png)
