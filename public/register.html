@@ -4,10 +4,19 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
     <title>Register</title>
 </head>
 <body>
     <h1>Register</h1>
     <p>회원가입을 하는 페이지</p>
+    <form id="register-form">
+        <input type="text" id="FirstName" placeholder="First Name">
+        <input type="text" id="LastName" placeholder="Last Name">
+        <input type="email" id="Email" placeholder="Email">
+        <input type="password" id="Password" placeholder="Password">
+        <input type="submit" id="Submit-Btn" value="Submit" onclick="Register()">
+    </form>
 </body>
+<script src="/public/js/register.js"></script>
 </html>
