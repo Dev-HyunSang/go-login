@@ -81,7 +81,7 @@ create table Users (
     "created_at": "2021-07-20T23:25:11.551493+09:00" // CreateAt | time.Now()
 }
 ```
-![FrontEnd Register](./images/Register.mov)
+![FrontEnd Register](./images/Register.mp4)
 ## 오류(고민) 해결기
 ### ID?
 ![error-01](./images/error-01.png)
