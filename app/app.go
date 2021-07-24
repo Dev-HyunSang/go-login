@@ -166,13 +166,6 @@ func LoginMemberHandler(w http.ResponseWriter, r *http.Request) {
 	LoginUser.LoginAt = time.Now()
 
 	err = bcrypt.CompareHashAndPassword([]byte(HashPw), []byte(LoginUser.Password))
-	if err != nil {
-		http.Redirect(w, r, "/login", http.StatusBadRequest)
-	} else {
-		session, _ := store.Get(r, "User-Login")
-		session.value
-		http.Redirect(w, r, "/home/index", http.StatusOK)
-	}
 }
 
 func NewHandler() http.Handler {
