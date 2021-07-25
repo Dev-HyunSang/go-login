@@ -22,12 +22,12 @@ import (
 User = NewMemberHandler에서 사용되며 회원가입시 DB로 구조화 시켜서 Insert함.
 LoginUser = LoginMemberHandler에서 사용하고 있으며 로그인시 DB로 SELETC를 하기 위함. */
 type User struct {
-	ID        uuid.UUID `json: "id"`
-	FirstName string    `json:"first_name"`
-	LastName  string    `json:"last_name"`
-	Email     string    `json:"email"`
-	Password  string    `json:"password"`
-	CreatedAt time.Time `json:"created_at"`
+	ID        uuid.UUID
+	FirstName string
+	LastName  string
+	Email     string
+	Password  string
+	CreatedAt time.Time
 }
 
 type LoginUser struct {
@@ -46,7 +46,7 @@ var (
 
 // Only Render Handler and Method "GET"
 func IndexRenderHandler(w http.ResponseWriter, r *http.Request) {
-	t, err := template.ParseFiles("public/index.html")
+	t, err := template.ParseFiles("public/view/index.html")
 	if err != nil {
 		panic(err)
 	}
@@ -54,7 +54,7 @@ func IndexRenderHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func RegisterRenderHandler(w http.ResponseWriter, r *http.Request) {
-	t, err := template.ParseFiles("public/register.html")
+	t, err := template.ParseFiles("public/view/register.html")
 	if err != nil {
 		panic(err)
 	}
@@ -62,7 +62,7 @@ func RegisterRenderHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func LoginRenderHandler(w http.ResponseWriter, r *http.Request) {
-	t, err := template.ParseFiles("public/login.html")
+	t, err := template.ParseFiles("public/view/login.html")
 	if err != nil {
 		panic(err)
 	}
@@ -70,7 +70,15 @@ func LoginRenderHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func HomeRenderHandler(w http.ResponseWriter, r *http.Request) {
-	t, err := template.ParseFiles("public/home/index.html")
+	t, err := template.ParseFiles("public/view/home/index.html")
+	if err != nil {
+		panic(err)
+	}
+	t.Execute(w, nil)
+}
+
+func TestRenderHandler(w http.ResponseWriter, r *http.Request) {
+	t, err := template.ParseFiles("public/view/test.html")
 	if err != nil {
 		panic(err)
 	}
@@ -94,23 +102,22 @@ func NewMemberHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		panic(err)
 	}
-
 	defer db.Close()
 
 	user := new(User)
-	err = json.NewDecoder(r.Body).Decode(&user)
-	if err != nil {
-		panic(err)
-	}
 
 	UserID := uuid.Must(uuid.NewV4())
 	if err != nil {
 		panic(err)
 	}
+	user.Password = r.PostFormValue("password")
 
 	pwHash, _ := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 
 	user.ID = UserID
+	user.FirstName = r.PostFormValue("first_name")
+	user.LastName = r.PostFormValue("last_name")
+	user.Email = r.PostFormValue("email")
 	user.Password = string(pwHash)
 	user.CreatedAt = time.Now()
 
@@ -119,13 +126,10 @@ func NewMemberHandler(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	db.Close()
+	defer db.Close()
 
-	w.Header().Add("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-
-	data, _ := json.Marshal(user)
-	fmt.Fprint(w, string(data))
+	fmt.Fprint(w, "Success!")
 }
 
 func LoginMemberHandler(w http.ResponseWriter, r *http.Request) {
@@ -168,6 +172,14 @@ func LoginMemberHandler(w http.ResponseWriter, r *http.Request) {
 	err = bcrypt.CompareHashAndPassword([]byte(HashPw), []byte(LoginUser.Password))
 }
 
+// PostFromHandler TestHandler
+func TestPostFormHandler(w http.ResponseWriter, r *http.Request) {
+	user := new(LoginUser)
+	user.Email = r.PostFormValue("email")
+	user.Password = r.PostFormValue("password")
+	fmt.Fprint(w, user.Email, user.Password)
+}
+
 func NewHandler() http.Handler {
 	mux := mux.NewRouter()
 	fs := http.FileServer(http.Dir("./public/"))
@@ -177,9 +189,11 @@ func NewHandler() http.Handler {
 	mux.HandleFunc("/register", RegisterRenderHandler).Methods("GET")
 	mux.HandleFunc("/login", LoginRenderHandler).Methods("GET")
 	mux.HandleFunc("/home/index", HomeRenderHandler).Methods("GET")
+	mux.HandleFunc("/test", TestRenderHandler).Methods("GET")
 
-	mux.HandleFunc("/register/new", NewMemberHandler).Methods("POST")
+	mux.HandleFunc("/register", NewMemberHandler).Methods("POST")
 	mux.HandleFunc("/login", LoginMemberHandler).Methods("POST")
+	mux.HandleFunc("/test/post", TestPostFormHandler).Methods("POST")
 
 	mux.PathPrefix("/public/").Handler(http.StripPrefix("/public/", fs))
 	return mux
