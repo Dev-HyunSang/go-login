@@ -13,12 +13,11 @@
     - [X] MySQL 연결 및 Table 구축
     - [X] `uuid` 패키지를 이용하여 `UUIDv4`로 개인별 ID 부여
     - [X] `bcrypt` 패키지를 이용하여 패스워드 암호화
-    - [X] API 요청 및 응답 구성 
 - [ ] `/login` POST: 
     - [X] MySQL 연결  - 2021.07.22
-    - [ ] 입력된 값과 DB에 저장되어 있는 값과 대조 / MySQL & `bcrypt`
-    - [ ] JMT 구성으로 입력된 값과 DB에 저장되어 있는 값을 대조 후 JMT Token 생성
-    - [ ] API 요청 및 응답 구성
+    - [X] DB에서 UUID, Email, Password 가지고 오기 - 2021.07.26
+    - [ ] DB에서 가져온 정보를 암호화 된 패스워드와 사용자 입력 패스워드 대조 
+    - [ ] Session 생성 및 `/home/index`으로 갈 수 있도록 개발
 
 - [ ] Infrastructure
     - [X] Docker 기반의 MySQL 서버 구축 - 2021.07.19
@@ -28,8 +27,8 @@
 ### FrontEnd
 - [X] Register
     - [X] `/register/new`: 회원가입 요청하기
-- [ ] Login
-    - [ ] `/login`: 로그인 요청하기
+- [X] Login
+    - [X] `/login`: 로그인 요청하기
 
 ## 기본 설정
 ### `.env` 설정하기
