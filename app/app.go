@@ -2,7 +2,6 @@ package app
 
 import (
 	"database/sql"
-	"encoding/json"
 	"fmt"
 	"html/template"
 	"log"
@@ -31,16 +30,17 @@ type User struct {
 }
 
 type LoginUser struct {
-	ID        uuid.UUID `json:"id"`
-	FirstName string    `json:"first_name"`
-	LastName  string    `json:"last_name"`
-	Email     string    `json:"email"`
-	Password  string    `json:"password"`
-	LoginAt   time.Time `json:"login_at"`
+	ID        uuid.UUID
+	FirstName string
+	LastName  string
+	Email     string
+	Password  string
+	LoginAt   time.Time
 }
 
 var (
 	err   error
+	key   = []byte("super-secret-key")
 	store = sessions.NewCookieStore([]byte(os.Getenv("SESSION_KEY")))
 )
 
@@ -110,14 +110,14 @@ func NewMemberHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		panic(err)
 	}
-	user.Password = r.PostFormValue("password")
+	user.Password = r.FormValue("password")
 
 	pwHash, _ := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 
 	user.ID = UserID
-	user.FirstName = r.PostFormValue("first_name")
-	user.LastName = r.PostFormValue("last_name")
-	user.Email = r.PostFormValue("email")
+	user.FirstName = r.FormValue("first_name")
+	user.LastName = r.FormValue("last_name")
+	user.Email = r.FormValue("email")
 	user.Password = string(pwHash)
 	user.CreatedAt = time.Now()
 
@@ -129,7 +129,7 @@ func NewMemberHandler(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprint(w, "Success!")
+	http.Redirect(w, r, "/login", http.StatusMovedPermanently)
 }
 
 func LoginMemberHandler(w http.ResponseWriter, r *http.Request) {
@@ -152,24 +152,33 @@ func LoginMemberHandler(w http.ResponseWriter, r *http.Request) {
 
 	defer db.Close()
 
+	User := new(LoginUser)
+
 	var (
-		HashPw string
+		Email    string
+		ID       uuid.UUID
+		Password string
 	)
 
-	LoginUser := new(LoginUser)
-	err = json.NewDecoder(r.Body).Decode(&LoginUser)
+	UserPostEmail := r.PostFormValue("email")
+
+	rows, err := db.Query("SELECT  Email, ID, Password FROM Users where Email= ?", UserPostEmail)
 	if err != nil {
-		panic(err)
+		fmt.Printf("DB ERROR")
 	}
 
-	_ = db.QueryRow(
-		"SELECT ID, FirstName, LastName, Password"+
-			"FROM go_login"+
-			"WHERE Email=? AND is_enabled=1", LoginUser.Email).Scan(&LoginUser.ID, &LoginUser.FirstName, &LoginUser.LastName, &HashPw)
+	defer rows.Close()
 
-	LoginUser.LoginAt = time.Now()
+	for rows.Next() {
+		rows.Scan(&Email, &ID, &Password)
+		User.Email = Email
+		User.ID = ID
+		User.Password = Password
+		fmt.Fprint(w, User.Email, User.ID, User.Password)
+	}
+	User.LoginAt = time.Now()
 
-	err = bcrypt.CompareHashAndPassword([]byte(HashPw), []byte(LoginUser.Password))
+	// err = bcrypt.CompareHashAndPassword([]byte(HashPw), []byte(User.Password))
 }
 
 // PostFromHandler TestHandler
@@ -183,6 +192,9 @@ func TestPostFormHandler(w http.ResponseWriter, r *http.Request) {
 func NewHandler() http.Handler {
 	mux := mux.NewRouter()
 	fs := http.FileServer(http.Dir("./public/"))
+	mux.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
+		http.Error(w, "Not Found", http.StatusNotFound)
+	})
 
 	// GET | Render
 	mux.HandleFunc("/", IndexRenderHandler).Methods("GET")
