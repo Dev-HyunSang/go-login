@@ -161,6 +161,7 @@ func LoginMemberHandler(w http.ResponseWriter, r *http.Request) {
 	)
 
 	UserPostEmail := r.PostFormValue("email")
+	UserPostPassword := r.PostFormValue("password")
 
 	rows, err := db.Query("SELECT  Email, ID, Password FROM Users where Email= ?", UserPostEmail)
 	if err != nil {
@@ -174,11 +175,19 @@ func LoginMemberHandler(w http.ResponseWriter, r *http.Request) {
 		User.Email = Email
 		User.ID = ID
 		User.Password = Password
-		fmt.Fprint(w, User.Email, User.ID, User.Password)
+		err := bcrypt.CompareHashAndPassword([]byte(User.Password), []byte(UserPostPassword))
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		} else {
+			w.WriteHeader(http.StatusOK)
+			sessions, _ := store.Get(r, "login-session")
+			sessions.Values["authenticated"] = true
+			sessions.Values["email"] = User.Email
+			User.LoginAt = time.Now()
+			fmt.Fprint(w, "Success!")
+		}
 	}
-	User.LoginAt = time.Now()
-
-	// err = bcrypt.CompareHashAndPassword([]byte(HashPw), []byte(User.Password))
 }
 
 // PostFromHandler TestHandler
