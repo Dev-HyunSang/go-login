@@ -15,10 +15,12 @@
 <body>
     <h1>Login</h1>
     <p>로그인 페이지입니다.</p>
-    <form action="/login">
-        <input type="email" placeholder="Email">
+    <form action="/login" method="POST">
+        <input type="email" placeholder="Email" name="email">
         <br>
-        <input type="password" placeholder="Password">
+        <input type="password" placeholder="Password" name="password">
+        <br>
+        <input type="submit" value="Login">
     </form>
 </body>
 </html>
