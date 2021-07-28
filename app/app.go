@@ -44,6 +44,15 @@ var (
 	store = sessions.NewCookieStore([]byte(os.Getenv("SESSION_KEY")))
 )
 
+func SessionInit() {
+	store.Options = &sessions.Options{
+		Domain:   "localhost",
+		Path:     "/",
+		MaxAge:   3600 * 1,
+		HttpOnly: true,
+	}
+}
+
 // Only Render Handler and Method "GET"
 func IndexRenderHandler(w http.ResponseWriter, r *http.Request) {
 	t, err := template.ParseFiles("public/view/index.html")
@@ -75,6 +84,7 @@ func HomeRenderHandler(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 	t.Execute(w, nil)
+	sessions
 }
 
 func TestRenderHandler(w http.ResponseWriter, r *http.Request) {
@@ -198,6 +208,16 @@ func TestPostFormHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, user.Email, user.Password)
 }
 
+func LogOutHandler(w http.ResponseWriter, r *http.Request) {
+	sessions, _ := store.Get(r, "login-session")
+	sessions.Values["authenticated"] = false
+	sessions.Values["email"] = nil
+	text := "<h1>로그아웃이 되었습니다.</h1><br><a herf='/'>홈으로 돌아가기</a>"
+	tt := `{{.}}`
+	t := template.Must(template.New("logout").Parse(tt))
+	t.Execute(w, text)
+}
+
 func NewHandler() http.Handler {
 	mux := mux.NewRouter()
 	fs := http.FileServer(http.Dir("./public/"))
@@ -214,6 +234,7 @@ func NewHandler() http.Handler {
 
 	mux.HandleFunc("/register", NewMemberHandler).Methods("POST")
 	mux.HandleFunc("/login", LoginMemberHandler).Methods("POST")
+	mux.HandleFunc("/logout", LogOutHandler).Methods("POST")
 	mux.HandleFunc("/test/post", TestPostFormHandler).Methods("POST")
 
 	mux.PathPrefix("/public/").Handler(http.StripPrefix("/public/", fs))
