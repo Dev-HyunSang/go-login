@@ -16,7 +16,7 @@
 - [ ] `/login` POST: 
     - [X] MySQL 연결  - 2021.07.22
     - [X] DB에서 UUID, Email, Password 가지고 오기 - 2021.07.26
-    - [ ] DB에서 가져온 정보를 암호화 된 패스워드와 사용자 입력 패스워드 대조 
+    - [X] DB에서 가져온 정보를 암호화 된 패스워드와 사용자 입력 패스워드 대조 
     - [ ] Session 생성 및 `/home/index`으로 갈 수 있도록 개발
 
 - [ ] Infrastructure
@@ -89,3 +89,12 @@ create table Users (
 ### Session vs JWT 
 ![error-02](./images/error-02.png)
 로그인 이후 관리를 어떻게 해야하는지 궁금해서 Discrod Gophers에 질문을 해 본 결과 보편적으로 사용하고 있는 방식은 Seesion 방식을 많이 사용하고 있다고 하여서 Seesion을 사용하기로 함.
+
+### 참고하였던 자료
+- DataBase
+    - [예제로 배우는 Go 프로그래밍 - MySQL 사용 - 쿼리](http://golang.site/go/article/107-MySql-%EC%82%AC%EC%9A%A9---%EC%BF%BC%EB%A6%AC)
+    - [[Go+MySQL] Go에서 MySQL 사용하기](https://soyoung-new-challenge.tistory.com/126)
+- [Session](https://github.com/gorilla/sessions)
+    - [Golang NewCookieStore Examples](https://golang.hotexamples.com/examples/github.com.gorilla.sessions/-/NewCookieStore/golang-newcookiestore-function-examples.html)
+    - [session - 고릴라 세션을 사용하는 동안 golang의 세션 변수가 저장되지 않습니다](https://pythonq.com/so/session/457854)
+    - [Go 언어 웹 프로그래밍 철저 입문 - 세션 관리](https://thebook.io/006806/ch09/03/01_01/)
