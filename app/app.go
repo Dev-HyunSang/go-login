@@ -12,7 +12,6 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gofrs/uuid"
 	"github.com/gorilla/mux"
-	"github.com/gorilla/sessions"
 	"github.com/joho/godotenv"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -39,19 +38,9 @@ type LoginUser struct {
 }
 
 var (
-	err   error
-	key   = []byte("super-secret-key")
-	store = sessions.NewCookieStore([]byte(os.Getenv("SESSION_KEY")))
+	err error
+	key = []byte("super-secret-key")
 )
-
-func SessionInit() {
-	store.Options = &sessions.Options{
-		Domain:   "localhost",
-		Path:     "/",
-		MaxAge:   3600 * 1,
-		HttpOnly: true,
-	}
-}
 
 // Only Render Handler and Method "GET"
 func IndexRenderHandler(w http.ResponseWriter, r *http.Request) {
@@ -84,7 +73,10 @@ func HomeRenderHandler(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 	t.Execute(w, nil)
-	sessions
+	if err != nil {
+	} else {
+
+	}
 }
 
 func TestRenderHandler(w http.ResponseWriter, r *http.Request) {
@@ -191,11 +183,6 @@ func LoginMemberHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		} else {
 			w.WriteHeader(http.StatusOK)
-			sessions, _ := store.Get(r, "login-session")
-			sessions.Values["authenticated"] = true
-			sessions.Values["email"] = User.Email
-			User.LoginAt = time.Now()
-			fmt.Fprint(w, "Success!")
 		}
 	}
 }
@@ -209,13 +196,6 @@ func TestPostFormHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func LogOutHandler(w http.ResponseWriter, r *http.Request) {
-	sessions, _ := store.Get(r, "login-session")
-	sessions.Values["authenticated"] = false
-	sessions.Values["email"] = nil
-	text := "<h1>로그아웃이 되었습니다.</h1><br><a herf='/'>홈으로 돌아가기</a>"
-	tt := `{{.}}`
-	t := template.Must(template.New("logout").Parse(tt))
-	t.Execute(w, text)
 }
 
 func NewHandler() http.Handler {
