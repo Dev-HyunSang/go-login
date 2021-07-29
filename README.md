@@ -16,7 +16,7 @@
 - [ ] `/login` POST: 
     - [X] MySQL 연결  - 2021.07.22
     - [X] DB에서 UUID, Email, Password 가지고 오기 - 2021.07.26
-    - [X] DB에서 가져온 정보를 암호화 된 패스워드와 사용자 입력 패스워드 대조 
+    - [X] DB에서 가져온 정보를 암호화 된 패스워드와 사용자 입력 패스워드 대조  - 2021.07.27
     - [ ] Session 생성 및 `/home/index`으로 갈 수 있도록 개발
 
 - [ ] Infrastructure
@@ -29,6 +29,8 @@
     - [X] `/register/new`: 회원가입 요청하기
 - [X] Login
     - [X] `/login`: 로그인 요청하기
+- [ ] Logout
+    - [ ] `/logout`: 로그아웃 하기
 
 ## 기본 설정
 ### `.env` 설정하기
@@ -38,10 +40,7 @@
 - `DB_NAME`: DataBase 이름
 
 ```env
-DB_ACCOUNT=
-DB_HOST=
-DB_PASSWORD=
-DB_NAME=
+DB_Connection_URL=
 ```
 
 ### DataBase Structure
@@ -57,29 +56,6 @@ create table Users (
 );
 ```
 
-## 기능
-무엇이 더 효과적으로 개발할 수 있고 가독성 좋은 API를 만들어야 하는지에 대해서 고민하고 있습니다.
-
-### 회원가입
-```json
-// Reqeust http://localhost:3000/register/new | GET
-{
-    "first_name": "박",
-    "last_name": "현상",
-    "email": "hyun.sang@parkhyunsang.com",
-    "password": "parkhs0625"
-}
-
-// Respone
-{
-    "ID": "d2d76623-fd96-42bb-a11d-04677baf453d", // UUIDv4
-    "first_name": "박",
-    "last_name": "현상",
-    "email": "hyun.sang@parkhyunsang.com",
-    "password": "$2a$10$3QRdPhyeA0Dgxm.mhFqEkO/7Ok02WJZMq8NkYNdqPp9Kf2LBrnURC", // Encryption
-    "created_at": "2021-07-20T23:25:11.551493+09:00" // CreateAt | time.Now()
-}
-```
 ![FrontEnd Register](./images/Register.gif)
 ## 오류(고민) 해결기
 ### ID?
