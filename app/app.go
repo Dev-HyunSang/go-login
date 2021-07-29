@@ -94,12 +94,9 @@ func NewMemberHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 환경변수를 이용하여서 DB 접속 정보를 가지고 옴.
-	DB_ACCOUNT := os.Getenv("DB_ACCOUNT")
-	DB_PASSWORD := os.Getenv("DB_PASSWORD")
-	DB_HOST := os.Getenv("DB_HOST")
-	DB_NAME := os.Getenv("DB_NAME")
+	DB_Connection_URL := os.Getenv("DB_Connection_URL")
 
-	Connection := DB_ACCOUNT + ":" + DB_PASSWORD + "@tcp(" + DB_HOST + ")/" + DB_NAME
+	Connection := DB_Connection_URL
 	db, err := sql.Open("mysql", Connection)
 	if err != nil {
 		panic(err)
@@ -141,12 +138,9 @@ func LoginMemberHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 환경변수를 이용하여서 DB 접속 정보를 가지고 옴.
-	DB_ACCOUNT := os.Getenv("DB_ACCOUNT")
-	DB_PASSWORD := os.Getenv("DB_PASSWORD")
-	DB_HOST := os.Getenv("DB_HOST")
-	DB_NAME := os.Getenv("DB_NAME")
+	DB_Connection_URL := os.Getenv("DB_Connection_URL")
 
-	Connection := DB_ACCOUNT + ":" + DB_PASSWORD + "@tcp(" + DB_HOST + ")/" + DB_NAME
+	Connection := DB_Connection_URL
 	db, err := sql.Open("mysql", Connection)
 	if err != nil {
 		panic(err)
