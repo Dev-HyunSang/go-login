@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	"go-login/render"
-	"html/template"
 	"log"
 	"net"
 	"net/http"
@@ -46,14 +45,6 @@ var (
 	key   = []byte("super-secret-key")
 	store *mysqlstore.MySQLStore
 )
-
-func TestRenderHandler(w http.ResponseWriter, r *http.Request) {
-	t, err := template.ParseFiles("public/view/test.html")
-	if err != nil {
-		panic(err)
-	}
-	t.Execute(w, nil)
-}
 
 func NewMemberHandler(w http.ResponseWriter, r *http.Request) {
 	err := godotenv.Load(".env")
@@ -187,7 +178,6 @@ func NewHandler() http.Handler {
 	mux.HandleFunc("/register", render.RegisterRenderHandler).Methods("GET")
 	mux.HandleFunc("/login", render.LoginRenderHandler).Methods("GET")
 	mux.HandleFunc("/home/index", render.HomeRenderHandler).Methods("GET")
-	mux.HandleFunc("/test", TestRenderHandler).Methods("GET")
 
 	mux.HandleFunc("/register", NewMemberHandler).Methods("POST")
 	mux.HandleFunc("/login", LoginMemberHandler).Methods("POST")
