@@ -3,8 +3,10 @@ package app
 import (
 	"database/sql"
 	"fmt"
+	"go-login/render"
 	"html/template"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"time"
@@ -30,6 +32,7 @@ type User struct {
 }
 
 type LoginUser struct {
+	IP        net.IP
 	ID        uuid.UUID
 	FirstName string
 	LastName  string
@@ -43,43 +46,6 @@ var (
 	key   = []byte("super-secret-key")
 	store *mysqlstore.MySQLStore
 )
-
-// Only Render Handler and Method "GET"
-func IndexRenderHandler(w http.ResponseWriter, r *http.Request) {
-	t, err := template.ParseFiles("public/view/index.html")
-	if err != nil {
-		panic(err)
-	}
-	t.Execute(w, nil)
-}
-
-func RegisterRenderHandler(w http.ResponseWriter, r *http.Request) {
-	t, err := template.ParseFiles("public/view/register.html")
-	if err != nil {
-		panic(err)
-	}
-	t.Execute(w, nil)
-}
-
-func LoginRenderHandler(w http.ResponseWriter, r *http.Request) {
-	t, err := template.ParseFiles("public/view/login.html")
-	if err != nil {
-		panic(err)
-	}
-	t.Execute(w, nil)
-}
-
-func HomeRenderHandler(w http.ResponseWriter, r *http.Request) {
-	t, err := template.ParseFiles("public/view/home/index.html")
-	if err != nil {
-		panic(err)
-	}
-	t.Execute(w, nil)
-	if err != nil {
-	} else {
-
-	}
-}
 
 func TestRenderHandler(w http.ResponseWriter, r *http.Request) {
 	t, err := template.ParseFiles("public/view/test.html")
@@ -96,9 +62,13 @@ func NewMemberHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 환경변수를 이용하여서 DB 접속 정보를 가지고 옴.
-	DB_Connection_URL := os.Getenv("DB_Connection_URL")
+	DB_ACCOUNT := os.Getenv("DB_ACCOUNT")
+	DB_PASSWORD := os.Getenv("DB_PASSWORD")
+	DB_HOST := os.Getenv("DB_HOST")
+	DB_NAME := os.Getenv("DB_NAME")
 
-	Connection := DB_Connection_URL
+	Connection := DB_ACCOUNT + ":" + DB_PASSWORD + "@tcp(" + DB_HOST + ")/" + DB_NAME
+
 	db, err := sql.Open("mysql", Connection)
 	if err != nil {
 		panic(err)
@@ -140,9 +110,12 @@ func LoginMemberHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 환경변수를 이용하여서 DB 접속 정보를 가지고 옴.
-	DB_Connection_URL := os.Getenv("DB_Connection_URL")
+	DB_ACCOUNT := os.Getenv("DB_ACCOUNT")
+	DB_PASSWORD := os.Getenv("DB_PASSWORD")
+	DB_HOST := os.Getenv("DB_HOST")
+	DB_NAME := os.Getenv("DB_NAME")
 
-	Connection := DB_Connection_URL
+	Connection := DB_ACCOUNT + ":" + DB_PASSWORD + "@tcp(" + DB_HOST + ")/" + DB_NAME
 	db, err := sql.Open("mysql", Connection)
 	if err != nil {
 		panic(err)
@@ -178,7 +151,29 @@ func LoginMemberHandler(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		} else {
+			// GET LOGIN UERES IP
+			addres, err := net.InterfaceAddrs()
+			if err != nil {
+				os.Stderr.WriteString("Oops: " + err.Error() + "\n")
+				os.Exit(1)
+			}
+
+			for _, a := range addres {
+				if ipnet, ok := a.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
+					if ipnet.IP.To4() != nil {
+						User.IP = ipnet.IP
+					}
+				}
+			}
+
 			w.WriteHeader(http.StatusOK)
+			sessions, err := store.Get(r, "login-sessino")
+			sessions.Values["IP"] = User.IP
+			sessions.Values["UUID"] = User.ID
+			sessions.Values["Email"] = User.Email
+			User.LoginAt = time.Now()
+			sessions.Values["LoginAt"] = User.LoginAt
+			err = sessions.Save(r, w)
 		}
 	}
 }
@@ -187,21 +182,11 @@ func NewHandler() http.Handler {
 	mux := mux.NewRouter()
 	fs := http.FileServer(http.Dir("./public/"))
 
-	// Sessions Store at MySQL
-	err := godotenv.Load(".env")
-	if err != nil {
-		log.Fatalf("Error Loading .env file")
-	}
-
-	// 환경변수를 이용하여서 DB 접속 정보를 가지고 옴.
-	// DB_Connection_URL := os.Getenv("DB_Connection_URL")
-	defer store.Close()
-
 	// GET | Render
-	mux.HandleFunc("/", IndexRenderHandler).Methods("GET")
-	mux.HandleFunc("/register", RegisterRenderHandler).Methods("GET")
-	mux.HandleFunc("/login", LoginRenderHandler).Methods("GET")
-	mux.HandleFunc("/home/index", HomeRenderHandler).Methods("GET")
+	mux.HandleFunc("/", render.IndexRenderHandler).Methods("GET")
+	mux.HandleFunc("/register", render.RegisterRenderHandler).Methods("GET")
+	mux.HandleFunc("/login", render.LoginRenderHandler).Methods("GET")
+	mux.HandleFunc("/home/index", render.HomeRenderHandler).Methods("GET")
 	mux.HandleFunc("/test", TestRenderHandler).Methods("GET")
 
 	mux.HandleFunc("/register", NewMemberHandler).Methods("POST")
