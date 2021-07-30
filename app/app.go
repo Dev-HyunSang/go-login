@@ -13,6 +13,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
+	"github.com/srinathgs/mysqlstore"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -38,8 +39,9 @@ type LoginUser struct {
 }
 
 var (
-	err error
-	key = []byte("super-secret-key")
+	err   error
+	key   = []byte("super-secret-key")
+	store *mysqlstore.MySQLStore
 )
 
 // Only Render Handler and Method "GET"
@@ -181,23 +183,19 @@ func LoginMemberHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// PostFromHandler TestHandler
-func TestPostFormHandler(w http.ResponseWriter, r *http.Request) {
-	user := new(LoginUser)
-	user.Email = r.PostFormValue("email")
-	user.Password = r.PostFormValue("password")
-	fmt.Fprint(w, user.Email, user.Password)
-}
-
-func LogOutHandler(w http.ResponseWriter, r *http.Request) {
-}
-
 func NewHandler() http.Handler {
 	mux := mux.NewRouter()
 	fs := http.FileServer(http.Dir("./public/"))
-	mux.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
-		http.Error(w, "Not Found", http.StatusNotFound)
-	})
+
+	// Sessions Store at MySQL
+	err := godotenv.Load(".env")
+	if err != nil {
+		log.Fatalf("Error Loading .env file")
+	}
+
+	// 환경변수를 이용하여서 DB 접속 정보를 가지고 옴.
+	// DB_Connection_URL := os.Getenv("DB_Connection_URL")
+	defer store.Close()
 
 	// GET | Render
 	mux.HandleFunc("/", IndexRenderHandler).Methods("GET")
@@ -208,8 +206,6 @@ func NewHandler() http.Handler {
 
 	mux.HandleFunc("/register", NewMemberHandler).Methods("POST")
 	mux.HandleFunc("/login", LoginMemberHandler).Methods("POST")
-	mux.HandleFunc("/logout", LogOutHandler).Methods("POST")
-	mux.HandleFunc("/test/post", TestPostFormHandler).Methods("POST")
 
 	mux.PathPrefix("/public/").Handler(http.StripPrefix("/public/", fs))
 	return mux
