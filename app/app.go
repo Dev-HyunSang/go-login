@@ -13,8 +13,8 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gofrs/uuid"
 	"github.com/gorilla/mux"
+	"github.com/gorilla/sessions"
 	"github.com/joho/godotenv"
-	"github.com/srinathgs/mysqlstore"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -42,8 +42,7 @@ type LoginUser struct {
 
 var (
 	err   error
-	key   = []byte("super-secret-key")
-	store *mysqlstore.MySQLStore
+	store = sessions.NewCookieStore([]byte(os.Getenv("SESSION_KEY")))
 )
 
 func NewMemberHandler(w http.ResponseWriter, r *http.Request) {
@@ -142,29 +141,19 @@ func LoginMemberHandler(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		} else {
-			// GET LOGIN UERES IP
-			addres, err := net.InterfaceAddrs()
-			if err != nil {
-				os.Stderr.WriteString("Oops: " + err.Error() + "\n")
-				os.Exit(1)
-			}
-
-			for _, a := range addres {
-				if ipnet, ok := a.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
-					if ipnet.IP.To4() != nil {
-						User.IP = ipnet.IP
-					}
-				}
-			}
-
 			w.WriteHeader(http.StatusOK)
-			sessions, err := store.Get(r, "login-sessino")
-			sessions.Values["IP"] = User.IP
-			sessions.Values["UUID"] = User.ID
-			sessions.Values["Email"] = User.Email
+			w.Header().Set("Content-Type", "text/html")
+			session, _ := store.Get(r, "auth-login")
+			// IP를 기록하는 코드를 작성하였지만 되지 않아서 추후 개발하여서 추가할 예정임. / User.IP Noting
+			session.Values["ID"] = User.ID
+			session.Values["Email"] = User.Email
 			User.LoginAt = time.Now()
-			sessions.Values["LoginAt"] = User.LoginAt
-			err = sessions.Save(r, w)
+			session.Values["LogindAt"] = User.LoginAt
+			_, err = db.Exec("insert into Users (IP, ID, Email, LogindAt) value (?, ?, ?, ?)", User.IP, User.ID, User.Email, User.LoginAt)
+			if err != nil {
+				panic(err)
+			}
+			fmt.Fprint(w, "<p>Login Success</p>\n")
 		}
 	}
 }
