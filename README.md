@@ -17,6 +17,9 @@
     - [X] MySQL 연결  - 2021.07.22
     - [X] DB에서 UUID, Email, Password 가지고 오기 - 2021.07.26
     - [X] DB에서 가져온 정보를 암호화 된 패스워드와 사용자 입력 패스워드 대조  - 2021.07.27
+    - [X] Session 정보를 MySQL에 입력 - 2021.08.01
+        - 추가: 누가 로그인하였고 언제 했는지 추가함 / UUID / Email / TIME
+    - [ ] Request IP 확인 후 Session MySQL에 추가
     - [ ] Session 생성 및 `/home/index`으로 갈 수 있도록 개발
 
 - [ ] Infrastructure
@@ -44,6 +47,7 @@ DB_Connection_URL=
 ```
 
 ### DataBase Structure
+회원가입시 사용되는 MySQL Table 
 ```sql
 create  database go_login default character set utf8;
 create table Users (
@@ -55,7 +59,14 @@ create table Users (
     CreatedAt Timestamp
 );
 ```
-
+로그인 후 세션 기록을 위하여 만든 MySQL Table
+```SQL
+create table autu_login (
+    ID BINARY(36) primary key,
+    Email varchar(320) not null,
+    LogindAt timestamp
+);
+```
 ![FrontEnd Register](./images/Register.gif)
 ## 오류(고민) 해결기
 ### ID?
