@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"go-login/render"
 	"log"
-	"net"
 	"net/http"
 	"os"
 	"time"
@@ -31,7 +30,6 @@ type User struct {
 }
 
 type LoginUser struct {
-	IP        net.IP
 	ID        uuid.UUID
 	FirstName string
 	LastName  string
@@ -115,11 +113,11 @@ func LoginMemberHandler(w http.ResponseWriter, r *http.Request) {
 
 	User := new(LoginUser)
 
-	var (
-		Email    string
-		ID       uuid.UUID
-		Password string
-	)
+	// var (
+	// 	Email    string
+	// 	ID       uuid.UUID
+	// 	Password string
+	// )
 
 	UserPostEmail := r.PostFormValue("email")
 	UserPostPassword := r.PostFormValue("password")
@@ -132,28 +130,26 @@ func LoginMemberHandler(w http.ResponseWriter, r *http.Request) {
 	defer rows.Close()
 
 	for rows.Next() {
-		rows.Scan(&Email, &ID, &Password)
-		User.Email = Email
-		User.ID = ID
-		User.Password = Password
+		rows.Scan(&User.Email, &User.ID, &User.Password)
+		User.LoginAt = time.Now()
+		fmt.Println(User)
 		err := bcrypt.CompareHashAndPassword([]byte(User.Password), []byte(UserPostPassword))
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
-			return
+			fmt.Print("BAD ERROR")
 		} else {
 			w.WriteHeader(http.StatusOK)
-			w.Header().Set("Content-Type", "text/html")
 			session, _ := store.Get(r, "auth-login")
 			// IP를 기록하는 코드를 작성하였지만 되지 않아서 추후 개발하여서 추가할 예정임. / User.IP Noting
 			session.Values["ID"] = User.ID
 			session.Values["Email"] = User.Email
-			User.LoginAt = time.Now()
 			session.Values["LogindAt"] = User.LoginAt
-			_, err = db.Exec("insert into Users (IP, ID, Email, LogindAt) value (?, ?, ?, ?)", User.IP, User.ID, User.Email, User.LoginAt)
+			fmt.Println(User)
+			_, err = db.Exec("insert into autu_login (ID, Email, LogindAt) value (?, ?, ?)", User.ID, User.Email, User.LoginAt)
 			if err != nil {
-				panic(err)
+				panic("ERROR EXEC SESSION LOG\n")
 			}
-			fmt.Fprint(w, "<p>Login Success</p>\n")
+			fmt.Fprint(w, "Login Success")
 		}
 	}
 }
