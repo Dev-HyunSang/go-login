@@ -1,5 +1,6 @@
 # Go-Login
 > 본 프로젝트는 기본적인 로그인과 회원가입에 대해서 공부하고 개발하는 프로젝트입니다.
+> "현상아 프로젝트 마무리 하자 ^_^"
 
 본 프로젝트의 커밋 메시지 규칙은 [Conventinal Commit Messages](https://gist.github.com/qoomon/5dfcdf8eec66a051ecd85625518cfd13)를 따릅니다.
 
@@ -19,7 +20,9 @@
     - [X] DB에서 가져온 정보를 암호화 된 패스워드와 사용자 입력 패스워드 대조  - 2021.07.27
     - [X] Session 정보를 MySQL에 입력 - 2021.08.01
         - 추가: 누가 로그인하였고 언제 했는지 추가함 / UUID / Email / TIME
-    - [ ] Request IP 확인 후 Session MySQL에 추가
+    - [X] 로그인 완료시 JavaScript `alert` 띄우기
+    - [ ] 로그인 완료시 Home으로 이동
+        - 세션 처리 및 세션 확인 후 이동 시키기
     - [ ] Session 생성 및 `/home/index`으로 갈 수 있도록 개발
 
 - [ ] Infrastructure
