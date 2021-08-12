@@ -134,14 +134,13 @@ func LoginMemberHandler(w http.ResponseWriter, r *http.Request) {
 			fmt.Print("BAD ERROR")
 		} else {
 			w.WriteHeader(http.StatusOK)
-			session, _ := store.Get(r, "auth-login")
-			// IP를 기록하는 코드를 작성하였지만 되지 않아서 추후 개발하여서 추가할 예정임. / User.IP Noting
-			session.Values["ID"] = User.ID
-			session.Values["Email"] = User.Email
-			session.Values["LogindAt"] = User.LoginAt
-			session.Save(r, w)
-			fmt.Println(User)
-
+			LoginCookie := http.Cookie{
+				Name: "Auth",
+				// Cookie Value ONLY STRING!
+				Value:    string(User.Email),
+				HttpOnly: true,
+			}
+			w.Header().Set("Set-Cookie", LoginCookie.String())
 			// ERROR: 1회만 되고 그 후 업데이트가 안 됨.
 			_, err = db.Exec("insert into autu_login (ID, Email, LogindAt) value (?, ?, ?)", User.ID, User.Email, User.LoginAt)
 			if err != nil {
@@ -150,8 +149,10 @@ func LoginMemberHandler(w http.ResponseWriter, r *http.Request) {
 			h := `<!DOCTYPE html>
 			<html>
 			<script>
-				alert("로그인 성공!");
-				location.herf="/public/view/home/index.html";
+				if (confirm('로그인 성공!')) {
+					location.herf="/home/index"
+				}
+				console.log("로그인 성공!");
 			</script>
 			</html>`
 			fmt.Fprint(w, h)
