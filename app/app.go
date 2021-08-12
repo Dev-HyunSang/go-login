@@ -39,8 +39,9 @@ type LoginUser struct {
 }
 
 var (
-	err   error
-	store = sessions.NewCookieStore([]byte(os.Getenv("SESSION_KEY")))
+	err     error
+	store   = sessions.NewCookieStore([]byte(os.Getenv("SESSION_KEY")))
+	errCode http.ConnState
 )
 
 func NewMemberHandler(w http.ResponseWriter, r *http.Request) {
@@ -92,7 +93,7 @@ func NewMemberHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func LoginMemberHandler(w http.ResponseWriter, r *http.Request) {
-	err := godotenv.Load(".env")
+	err = godotenv.Load(".env")
 	if err != nil {
 		log.Fatalf("Error Loading .env file")
 	}
@@ -112,12 +113,6 @@ func LoginMemberHandler(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 
 	User := new(LoginUser)
-
-	// var (
-	// 	Email    string
-	// 	ID       uuid.UUID
-	// 	Password string
-	// )
 
 	UserPostEmail := r.PostFormValue("email")
 	UserPostPassword := r.PostFormValue("password")
@@ -144,12 +139,22 @@ func LoginMemberHandler(w http.ResponseWriter, r *http.Request) {
 			session.Values["ID"] = User.ID
 			session.Values["Email"] = User.Email
 			session.Values["LogindAt"] = User.LoginAt
+			session.Save(r, w)
 			fmt.Println(User)
+
+			// ERROR: 1회만 되고 그 후 업데이트가 안 됨.
 			_, err = db.Exec("insert into autu_login (ID, Email, LogindAt) value (?, ?, ?)", User.ID, User.Email, User.LoginAt)
 			if err != nil {
 				panic("ERROR EXEC SESSION LOG\n")
 			}
-			fmt.Fprint(w, "Login Success")
+			h := `<!DOCTYPE html>
+			<html>
+			<script>
+				alert("로그인 성공!");
+				location.herf="/public/view/home/index.html";
+			</script>
+			</html>`
+			fmt.Fprint(w, h)
 		}
 	}
 }
