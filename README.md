@@ -1,6 +1,7 @@
 # Go-Login
-> 본 프로젝트는 기본적인 로그인과 회원가입에 대해서 공부하고 개발하는 프로젝트입니다.
-> "현상아 프로젝트 마무리 하자 ^_^"
+> 본 프로젝트는 기본적인 로그인과 회원가입에 대해서 공부하고 개발하는 프로젝트입니다.  
+> 본 프로젝트는 종료 되었습니다. 2021.08.21, 추후 JWT를 이용해서 다시 프로젝트를 열 예정입니다.  
+> 프론트엔드에서의 처리가 아직 부족하여서 백엔드 개발을 다 완료 하였습니다.
 
 본 프로젝트의 커밋 메시지 규칙은 [Conventinal Commit Messages](https://gist.github.com/qoomon/5dfcdf8eec66a051ecd85625518cfd13)를 따릅니다.
 
@@ -23,21 +24,7 @@
     - [X] 로그인 완료시 JavaScript `alert` 띄우기
     - [ ] 로그인 완료시 Home으로 이동
         - 세션 처리 및 세션 확인 후 이동 시키기
-    - [ ] Session 생성 및 `/home/index`으로 갈 수 있도록 개발
-
-- [ ] Infrastructure
-    - [X] Docker 기반의 MySQL 서버 구축 - 2021.07.19
-        - [X] Table Users 설계 및 구축
-    - [ ] Docker 기반의 Golang BackEnd 서버 구축
-
-### FrontEnd
-- [X] Register
-    - [X] `/register/new`: 회원가입 요청하기
-- [X] Login
-    - [X] `/login`: 로그인 요청하기
-- [ ] Logout
-    - [ ] `/logout`: 로그아웃 하기
-
+  
 ## 기본 설정
 ### `.env` 설정하기
 - `DB_ACCOUNT`: MySQL 계정
